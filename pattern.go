@@ -14,7 +14,7 @@ type PatternMap struct {
 	Descriptor int	`json:"descriptor"`
 	StartValue int	`json:"startValue"`
 	EndValue   int	`json:"endValue"`
-	Delimiter   int	`json:"delimiter"`
+	Delimiter  int	`json:"delimiter"`
 }
 
 // Pattern struct
@@ -31,7 +31,6 @@ type Patterns struct {
 
 
 func fetchPatternsFromJSON(filePath string) (Patterns) {
-
 	/* Get Patterns */
 	patternFile, err := os.Open(filePath)
 	// if we os.Open returns an error then handle it

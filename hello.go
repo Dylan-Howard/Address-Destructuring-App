@@ -2,7 +2,9 @@ package main
 
 import (
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -53,6 +55,24 @@ func fetchAddressCollectionFromCSV(filePath string, onlyWCPS bool) AddressCollec
 	return *addressFile
 }
 
+func fetchSettings(filePath string) DatabaseSettings {
+	/* Get Settings */
+	settingsFile, err := os.Open(filePath)
+
+	if err != nil {
+		fmt.Println("Couldn't open `patterns.json`")
+		fmt.Println(err)
+	}
+	defer settingsFile.Close()
+
+	byteValue, _ := io.ReadAll(settingsFile)
+
+	var settings DatabaseSettings
+	json.Unmarshal(byteValue, &settings)
+
+	return settings
+}
+
 func exportAddresses(filePath string, addresses []Address) {
 	f, err := os.Create(filePath)
 	if err != nil {
@@ -91,4 +111,8 @@ func main() {
 	/* Export Addresses */
 	exportPath := filepath.Join(dataDirectory, "export", "addresses.csv")
 	exportAddresses(exportPath, addresses)
+
+	settingsPath := filepath.Join(dataDirectory, "settings", "campusSettings.json")
+	settings := fetchSettings(settingsPath)
+	GetAddresses(settings)
 }

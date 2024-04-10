@@ -41,7 +41,7 @@
       "expression": "^(?:.+(,|;| AND ))+.+(?:\\s*\\(?:.+\\))*$",
       "type": "list",
       "map": {
-        "includer": 1
+        "delimiter": 2
       }
     },
     {
