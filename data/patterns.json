@@ -5,24 +5,44 @@
       "type": "unit"
     },
     {
-      "expression": "^([A-Z]|[0-9]+|[A-Z][0-9]+|[0-9]+[A-Z])(\\s*\\(.+\\))*$",
-      "type": "unit"
+      "expression": "^([A-Z]|[0-9]+|[A-Z][0-9]+|[0-9]+[A-Z])(?:\\s*\\(?:.+\\))*$",
+      "type": "unit",
+      "map": {
+        "unitValue": 2
+      }
     },
     {
-      "expression": "^(APT|APTS|UNIT|LOT|SUITE|BUILDING|COTTAGE #|TRAILER|GARAGE BUILDING)\\s*([A-Z0-9]+)(-[A-Z0-9]+)*(\\s*\\(.+\\))*$",
-      "type": "unit"
+      "expression": "^(APT|APTS|UNIT|LOT|SUITE|BUILDING|COTTAGE #|TRAILER|GARAGE BUILDING)\\s*([A-Z0-9]+-*[A-Z0-9]*)(?:\\s*\\(?:.+\\))*$",
+      "type": "unit",
+      "map": {
+        "descriptor": 2,
+        "unitValue": 3
+      }
     },
     {
-      "expression": "^(.*)(APT|APTS|UNIT|LOT)*\\s*([A-Z][0-9]*)\\s*-\\s*(APT|APTS|UNIT)*\\s*([A-Z][0-9]*)(\\s*\\(.+\\))*$",
-      "type": "range"
+      "expression": "^(?:.*)(APT|APTS|UNIT|LOT)*\\s*([A-Z][0-9]*)\\s*-\\s*(?:APT|APTS|UNIT)*\\s*([A-Z][0-9]*)(\\s*\\(.+\\))*$",
+      "type": "range",
+      "map": {
+        "descriptor": 2,
+        "startValue": 3,
+        "endValue": 4
+      }
     },
     {
-      "expression": "^(.*)(APT|APTS|UNIT|LOT|SUITE)\\s*([A-Z0-9]+)\\s*-\\s*(APT|APTS|UNIT|LOT|SUITE)\\s*([A-Z0-9]+)\\s*(\\s*\\(.+\\))*$",
-      "type": "range"
+      "expression": "^(?:.*)(APT|APTS|UNIT|LOT|SUITE)\\s*([A-Z0-9]+)\\s*-\\s*(?:APT|APTS|UNIT|LOT|SUITE)\\s*([A-Z0-9]+)\\s*(?:\\s*\\(?:.+\\))*$",
+      "type": "range",
+      "map": {
+        "descriptor": 2,
+        "startValue": 3,
+        "endValue": 4
+      }
     },
     {
-      "expression": "^(?:.+(,|;| AND ))+.+(\\s*\\(.+\\))*$",
-      "type": "list"
+      "expression": "^(?:.+(,|;| AND ))+.+(?:\\s*\\(?:.+\\))*$",
+      "type": "list",
+      "map": {
+        "includer": 1
+      }
     },
     {
       "expression": "EACH.* HAS AN",

@@ -9,9 +9,19 @@ import (
 )
 
 // Pattern struct
+type PatternMap struct {
+	UnitValue  int	`json:"unitValue"`
+	Descriptor int	`json:"descriptor"`
+	StartValue int	`json:"startValue"`
+	EndValue   int	`json:"endValue"`
+	Includer   int	`json:"includer"`
+}
+
+// Pattern struct
 type Pattern struct {
-	Expression string `json:"expression"`
-	Type   	 string `json:"type"`
+	Expression string 		`json:"expression"`
+	Type   	   string 		`json:"type"`
+	Map   	   PatternMap `json:"map"`
 }
 
 // Patterns struct
@@ -26,9 +36,9 @@ func fetchPatternsFromJSON(filePath string) (Patterns) {
 	patternFile, err := os.Open(filePath)
 	// if we os.Open returns an error then handle it
 	if err != nil {
-			fmt.Println(err)
+		fmt.Println("Couldn't open `patterns.json`")
+		fmt.Println(err)
 	}
-	fmt.Println("Successfully opened `patterns.json`")
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer patternFile.Close()
 
@@ -42,7 +52,7 @@ func fetchPatternsFromJSON(filePath string) (Patterns) {
 	return patterns
 }
 
-func countOperations(patterns Patterns, addresses []AddressRow) (map[int]int) {
+func CountOperations(patterns Patterns, addresses []AddressRow) (map[int]int) {
 	counts := make(map[int]int)
 
 	for i := 1; i < len(addresses); i++ {
@@ -77,8 +87,6 @@ func SortRows(patterns Patterns, addresses []AddressRow) [][]AddressRow {
 			matched := exp.MatchString(addresses[i].Unit)
 
 			if matched {
-				// fmt.Println(exp.FindStringSubmatch(addresses[i].Unit));
-				fmt.Println(patterns.Patterns[j].Type)
 				sorted[j] = append(sorted[j], addresses[i])
 				break
 			}
@@ -94,33 +102,25 @@ func SortRows(patterns Patterns, addresses []AddressRow) [][]AddressRow {
 	return sorted
 }
 
-func (p Patterns) ClassifyUnitValue(value string) string {
+func (p Patterns) GetMatch(value string) (Pattern, bool) {
 
-	for j := len(p.Patterns) - 1; j >= 0; j-- {
-		var exp, _ = regexp.Compile(p.Patterns[j].Expression)
+	pattern := Pattern{}
+
+	for i := len(p.Patterns) - 1; i >= 0; i-- {
+		var exp, _ = regexp.Compile(p.Patterns[i].Expression)
 
 		matched := exp.MatchString(value)
 
 		if matched {
-			// fmt.Println(exp.FindStringSubmatch(addresses[i].Unit));
-			return p.Patterns[j].Type
+			return p.Patterns[i], true
 		}
 	}
 
-	return "unknown"
+	return pattern, false
 }
 
-func (p Pattern) MatchParts(address AddressRow) ([]string) {
-	var expression, regErr = regexp.Compile(p.Expression)
-	if regErr != nil {
-		return nil
-	}
+func (p Pattern) GetCaptureGroups(value string) []string {
+	var exp, _ = regexp.Compile(p.Expression)
 
-	matches := expression.FindStringSubmatch(address.Unit)
-
-	if (len(matches) > 1) {
-		return matches[1:]
-	}
-
-	return matches
+	return exp.FindStringSubmatch(value)
 }

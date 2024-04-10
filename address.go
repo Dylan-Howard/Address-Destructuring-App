@@ -12,6 +12,7 @@ type SchoolRegion struct {
 }
 
 type AddressList struct {
+	AddressUnit
 	UnitValue string
 	Delimiter string
 }
@@ -22,15 +23,18 @@ func (list AddressList) Split() {
 }
 
 type AddressRange struct {
-	UnitValue string
-	Includer string
+	AddressUnit
+	UnitDescriptor string
+	StartValue 		 string
+	EndValue 			 string
 }
 
 type AddressUnit struct {
-	Unit string
+	UnitDescriptor string
+	UnitValue  		 string
 }
 
-type AddressRow struct {
+type Address struct {
 	StreetNumber	string
 	StreetName		string
 	Unit					string
@@ -41,10 +45,10 @@ type AddressRow struct {
 	InCounty			bool
 }
 
-func (row AddressRow) IsInDistrict() bool {
-	return row.Region.Elementary != "City Schools"
+func (a Address) IsInDistrict() bool {
+	return a.Region.Elementary != "City Schools"
 }
 
-func (row AddressRow) ToString() string {
-	return row.StreetNumber + "," + row.StreetName + "," + row.Unit + "," + row.City
+func (a Address) ToString() string {
+	return a.StreetNumber + "," + a.StreetName + "," + a.Unit + "," + a.City
 }
