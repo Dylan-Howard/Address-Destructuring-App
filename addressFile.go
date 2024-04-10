@@ -128,44 +128,53 @@ func (a AddressRow) EnumerateRange(descriptor string, startValue string, endValu
 	return generateUnitList(descriptor, start, end, isChar, prefix)
 }
 
+func (a AddressRow) listAddressRange(pattern Pattern) []Address {
+	list := []Address {}
+
+	groups := pattern.GetCaptureGroups(a.Unit)
+
+	descriptor := groups[pattern.Map.Descriptor - 1]
+	startValue := groups[pattern.Map.StartValue - 1]
+	endValue := groups[pattern.Map.EndValue - 1]
+
+	units := a.EnumerateRange(descriptor, startValue, endValue)
+
+	for j := 0; j < len(units); j++ {
+		var addr Address
+		addr.StreetNumber = a.StreetNumber
+		addr.StreetName = a.StreetName
+		addr.City = a.City
+		addr.Zip = a.Zip
+		addr.State = a.State
+		addr.Region = a.Region
+		addr.InCounty = a.InCounty
+
+		addr.Unit = units[j]
+
+		list = append(list, addr)
+	}
+
+	return list
+}
+
 func (a AddressFile) ListAddresses(patterns Patterns) {
 	list := []Address {}
 
 	for i := 0; i < len(a.Rows); i++ {
 		matchedPattern, isMatch := patterns.GetMatch(a.Rows[i].Unit)
 
-		// if !isMatch {
-		// 	fmt.Println("Error: no match found")
-		// }
-
 		if isMatch && matchedPattern.Type == "range" {
-			// fmt.Println("Matched!")
-			// fmt.Println(a.Rows[i].Unit)
-			// fmt.Println(matchedPattern.Type)
-			// fmt.Println(matchedPattern.Map)
-			groups := matchedPattern.GetCaptureGroups(a.Rows[i].Unit)
-			// fmt.Println(groups)
+			rangeItems := a.Rows[i].listAddressRange(matchedPattern)
 
-			descriptor := groups[matchedPattern.Map.Descriptor - 1]
-			startValue := groups[matchedPattern.Map.StartValue - 1]
-			endValue := groups[matchedPattern.Map.EndValue - 1]
-
-			units := a.Rows[i].EnumerateRange(descriptor, startValue, endValue)
-
-			for j := 0; j < len(units); j++ {
-				var addr Address
-				addr.StreetNumber = a.Rows[i].StreetNumber
-				addr.StreetName = a.Rows[i].StreetName
-				addr.City = a.Rows[i].City
-				addr.Zip = a.Rows[i].Zip
-				addr.State = a.Rows[i].State
-				addr.Region = a.Rows[i].Region
-				addr.InCounty = a.Rows[i].InCounty
-
-				addr.Unit = units[j]
-
-				list = append(list, addr)
-			}
+			list = append(list, rangeItems...)
+		}
+		if isMatch && matchedPattern.Type == "list" {
+			// @TODO - Implement list split action
+			fmt.Println("Found a list!")
+		}
+		if isMatch && matchedPattern.Type == "unit" {
+			// @TODO - Implement unit actions
+			fmt.Println("Found a unit!")
 		}
 	}
 
