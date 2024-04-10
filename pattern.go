@@ -14,7 +14,7 @@ type PatternMap struct {
 	Descriptor int	`json:"descriptor"`
 	StartValue int	`json:"startValue"`
 	EndValue   int	`json:"endValue"`
-	Includer   int	`json:"includer"`
+	Delimiter   int	`json:"delimiter"`
 }
 
 // Pattern struct
