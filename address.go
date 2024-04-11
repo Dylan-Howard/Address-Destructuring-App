@@ -35,6 +35,7 @@ type AddressUnit struct {
 }
 
 type Address struct {
+	Id						int
 	StreetNumber	string
 	StreetName		string
 	Unit					string

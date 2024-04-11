@@ -23,7 +23,7 @@ func fetchAddressCollectionFromCSV(filePath string, onlyWCPS bool) AddressCollec
 	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 
-	// Checks for the error 
+	// Checks for the error
 	if err != nil {
 		fmt.Println("Error reading records")
 	}
@@ -44,7 +44,7 @@ func fetchAddressCollectionFromCSV(filePath string, onlyWCPS bool) AddressCollec
 			Middle: strings.TrimSpace(records[i][15]),
 			High: strings.TrimSpace(records[i][14]),
 		}
-		
+
 		tAddress.Region = tRegion
 
 		if !onlyWCPS || tAddress.InCounty {
@@ -55,22 +55,40 @@ func fetchAddressCollectionFromCSV(filePath string, onlyWCPS bool) AddressCollec
 	return *addressFile
 }
 
-func fetchSettings(filePath string) DatabaseSettings {
+func fetchSettings(filePath string) ConnectionSettings {
 	/* Get Settings */
 	settingsFile, err := os.Open(filePath)
 
 	if err != nil {
-		fmt.Println("Couldn't open `patterns.json`")
+		fmt.Println("Couldn't open `settings.json`")
 		fmt.Println(err)
 	}
 	defer settingsFile.Close()
 
 	byteValue, _ := io.ReadAll(settingsFile)
 
-	var settings DatabaseSettings
+	var settings ConnectionSettings
 	json.Unmarshal(byteValue, &settings)
 
 	return settings
+}
+
+func fetchQueries(filePath string) DatabaseQueries {
+	/* Get Settings */
+	queriesFile, err := os.Open(filePath)
+
+	if err != nil {
+		fmt.Println("Couldn't open `queries.json`")
+		fmt.Println(err)
+	}
+	defer queriesFile.Close()
+
+	byteValue, _ := io.ReadAll(queriesFile)
+
+	var queries DatabaseQueries
+	json.Unmarshal(byteValue, &queries)
+
+	return queries
 }
 
 func exportAddresses(filePath string, addresses []Address) {
@@ -112,7 +130,13 @@ func main() {
 	exportPath := filepath.Join(dataDirectory, "export", "addresses.csv")
 	exportAddresses(exportPath, addresses)
 
-	settingsPath := filepath.Join(dataDirectory, "settings", "campusSettings.json")
-	settings := fetchSettings(settingsPath)
-	GetAddresses(settings)
+	var campus InfiniteCampus
+
+	settingsPath := filepath.Join(curDir, "settings", "campusSettings.json")
+	campus.Settings = fetchSettings(settingsPath)
+
+	queriesPath := filepath.Join(curDir, "settings", "campusQueries.json")
+	campus.Queries = fetchQueries(queriesPath)
+
+	campusAddresses := campus.GetAddresses()
 }
