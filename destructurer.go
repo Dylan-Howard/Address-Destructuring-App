@@ -139,4 +139,5 @@ func main() {
 	campus.Queries = fetchQueries(queriesPath)
 
 	campusAddresses := campus.GetAddresses()
+	fmt.Println(len(campusAddresses))
 }
