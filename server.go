@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 )
 
 type AddressUploadFile struct {
@@ -123,16 +122,19 @@ func handleAddressSubmit(rw http.ResponseWriter, req *http.Request) {
 }
 
 func Serve() {
-	fileServer := http.FileServer(http.Dir("web"))
-	fileMatcher := regexp.MustCompile(`\.[a-zA-Z]*$`)
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if !fileMatcher.MatchString(r.URL.Path) {
-			http.ServeFile(w, r, "static/index.html")
-		} else {
-			fileServer.ServeHTTP(w, r)
-		}
-	})
+	fs := http.FileServer(http.Dir("analuo/build"))
+	http.Handle("/", fs)
+	// fileMatcher := regexp.MustCompile(`\.[a-zA-Z]*$`)
+
+	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	if !fileMatcher.MatchString(r.URL.Path) {
+	// 		http.ServeFile(w, r, "analuo/build/index.html")
+	// 	} else {
+	// 		fs.ServeHTTP(w, r)
+	// 	}
+	// })
+
 	http.HandleFunc("/api/addresses/validate", handleAddressValidation)
 	http.HandleFunc("/api/addresses/submit", handleAddressSubmit)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":3000", nil))
 }

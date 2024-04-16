@@ -9,9 +9,10 @@ import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 // import logo from './logo.svg';
 import './App.css';
-import InputFileUpload from './InputFileUpload';
-import DisplayTable from './DisplayTable'
-import { Address } from './Address';
+import InputFileUpload from './Common/InputFileUpload';
+import DisplayTable from './Common/DisplayTable'
+import { Address } from './Common/Address';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const steps = ['Upload address file', 'Confirm results', 'Upload changes'];
 
@@ -27,8 +28,7 @@ async function parseCSV(file: File) {
   const fileRows = text.split('\r\n');
   headers.push(...fileRows[0].split(','));
 
-  // for (let i = 1; i < fileRows.length; i += 1) {
-  for (let i = 1; i < 10; i += 1) {
+  for (let i = 1; i < fileRows.length; i += 1) {
     const fields = [];
     const values = fileRows[i].split(',');
 
@@ -87,6 +87,7 @@ function App() {
     rows: [['']],
   });
   const [uploadStatus, setUploadStatus] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const canAdvance = () => activeStep !== 0 || file.size !== 0;
 
@@ -99,16 +100,15 @@ function App() {
         });
     }
     if (activeStep === 1) {
+      setIsLoading(true);
       const body = {
         headers,
-        rows: rows.slice(0,10),
+        rows,
       };
 
-      const response = await postData('http://localhost:8080/api/addresses/validate', body);
-      // console.log('*OR* have the backend process build a queue of actions to perform');
+      const response = await postData('http://localhost:3000/api/addresses/validate', body);
       
       const responseHeaders = Object.keys(response.data[0]);
-      console.log(response.data[0]);
       const responseRows = response.data.map((a: Address) => ([
         a.Id,
         a.StreetNumber,
@@ -125,15 +125,18 @@ function App() {
         headers: responseHeaders,
         rows: responseRows,
       });
+      setIsLoading(false);
     }
     if (activeStep === 2) {
+      setIsLoading(true);
       const body = {
         headers,
-        rows: validation.rows.slice(0,10),
+        rows: validation.rows,
       };
       const response = await postData('http://localhost:8080/api/addresses/submit', body);
 
       setUploadStatus(!!response);
+      setIsLoading(false);
     }
 
     setActiveStep((prevActiveStep) => prevActiveStep + 1);
@@ -185,19 +188,21 @@ function App() {
           ) : (
             <>
               <Typography sx={{ mt: 2, mb: 1 }}>Step {activeStep + 1}</Typography>
-              <Box></Box>
-              {activeStep === 0
-                ? <InputFileUpload onChange={handleFileChange} />
-                : ''
-              }
-              {activeStep === 1
-                ? <DisplayTable headers={headers} rows={rows} />
-                : ''
-              }
-              {activeStep === 2
-                ? <DisplayTable headers={validation.headers} rows={validation.rows} />
-                : ''
-              }
+              <Stack flexDirection="row" justifyContent="center">
+                {activeStep === 0
+                  ? <InputFileUpload onChange={handleFileChange} />
+                  : ''
+                }
+                {activeStep === 1
+                  ? (isLoading ? <CircularProgress /> : <DisplayTable headers={headers} rows={rows} />)
+                  : ''
+                }
+                {activeStep === 2
+                  ? (isLoading ? <CircularProgress /> : <DisplayTable headers={validation.headers} rows={validation.rows} />)
+                  : ''
+                }
+              </Stack>
+              
               <Stack direction='row' spacing={2} sx={{ pt: 2 }}>
                 <Button
                   color="inherit"
