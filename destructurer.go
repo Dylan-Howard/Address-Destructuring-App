@@ -7,9 +7,38 @@ import (
 	"io"
 	"log"
 	"os"
-	"path/filepath"
+	"strconv"
 	"strings"
 )
+
+func fetchAddressCollectionFromData(rows [][]string, onlyWCPS bool) AddressCollection {
+	addressFile := new(AddressCollection)
+
+	for i := 0; i < len(rows); i++ {
+		var tAddress AddressRow
+		tAddress.Id, _ = strconv.Atoi(rows[i][0])
+		tAddress.StreetNumber = strings.TrimSpace(rows[i][2])
+		tAddress.StreetName = strings.TrimSpace(rows[i][3])
+		tAddress.Unit = strings.TrimSpace(rows[i][5])
+		tAddress.City = strings.TrimSpace(rows[i][6])
+		tAddress.Zip = strings.TrimSpace(rows[i][8])
+		tAddress.State = strings.TrimSpace(rows[i][12])
+		tAddress.InCounty = strings.TrimSpace(rows[i][16]) != "Outside County Line"
+
+		tRegion := SchoolRegion{
+			Elementary: strings.TrimSpace(rows[i][15]),
+			Middle: strings.TrimSpace(rows[i][14]),
+			High: strings.TrimSpace(rows[i][13]),
+		}
+		tAddress.Region = tRegion
+
+		if !onlyWCPS || tAddress.InCounty {
+			addressFile.Rows = append(addressFile.Rows, tAddress)
+		}
+	}
+
+	return *addressFile
+}
 
 func fetchAddressCollectionFromCSV(filePath string, onlyWCPS bool) AddressCollection {
 	file, err := os.Open(filePath)
@@ -28,31 +57,7 @@ func fetchAddressCollectionFromCSV(filePath string, onlyWCPS bool) AddressCollec
 		fmt.Println("Error reading records")
 	}
 
-	addressFile := new(AddressCollection)
-
-	for i := 0; i < len(records); i++ {
-		var tAddress AddressRow
-		tAddress.StreetNumber = strings.TrimSpace(records[i][3])
-		tAddress.StreetName = strings.TrimSpace(records[i][4])
-		tAddress.Unit = strings.TrimSpace(records[i][5])
-		tAddress.City = strings.TrimSpace(records[i][6])
-		tAddress.Zip = strings.TrimSpace(records[i][7])
-		tAddress.State = strings.TrimSpace(records[i][12])
-
-		tRegion := SchoolRegion{
-			Elementary: strings.TrimSpace(records[i][16]),
-			Middle: strings.TrimSpace(records[i][15]),
-			High: strings.TrimSpace(records[i][14]),
-		}
-
-		tAddress.Region = tRegion
-
-		if !onlyWCPS || tAddress.InCounty {
-			addressFile.Rows = append(addressFile.Rows, tAddress)
-		}
-	}
-
-	return *addressFile
+	return fetchAddressCollectionFromData(records, onlyWCPS)
 }
 
 func fetchSettings(filePath string) ConnectionSettings {
@@ -109,35 +114,37 @@ func exportAddresses(filePath string, addresses []Address) {
 }
 
 func main() {
-	curDir, err := os.Getwd()
+	// curDir, err := os.Getwd()
 
-	if err != nil {
-		log.Println(err)
-	}
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
-	dataDirectory := filepath.Join(curDir, "data")
+	// dataDirectory := filepath.Join(curDir, "../data")
 
 	/* Get patterns */
-	patternsPath := filepath.Join(dataDirectory, "patterns.json")
-	patterns := fetchPatternsFromJSON(patternsPath)
+	// patternsPath := filepath.Join(dataDirectory, "patterns.json")
+	// patterns := fetchPatternsFromJSON(patternsPath)
 
-	/* Get addresses */
-	addressesPath := filepath.Join(dataDirectory, "import", "wczp-addresses.csv")
-	addressRecords := fetchAddressCollectionFromCSV(addressesPath, false)
-	addresses := addressRecords.GetAddresses(patterns, "")
+	// /* Get addresses */
+	// addressesPath := filepath.Join(dataDirectory, "import", "wczp-addresses.csv")
+	// addressRecords := fetchAddressCollectionFromCSV(addressesPath, false)
+	// addresses := addressRecords.GetAddresses(patterns, "")
 
-	/* Export Addresses */
-	exportPath := filepath.Join(dataDirectory, "export", "addresses.csv")
-	exportAddresses(exportPath, addresses)
+	// /* Export Addresses */
+	// exportPath := filepath.Join(dataDirectory, "export", "addresses.csv")
+	// exportAddresses(exportPath, addresses)
 
-	var campus InfiniteCampus
+	// var campus InfiniteCampus
 
-	settingsPath := filepath.Join(curDir, "settings", "campusSettings.json")
-	campus.Settings = fetchSettings(settingsPath)
+	// settingsPath := filepath.Join(curDir, "settings", "campusSettings.json")
+	// campus.Settings = fetchSettings(settingsPath)
 
-	queriesPath := filepath.Join(curDir, "settings", "campusQueries.json")
-	campus.Queries = fetchQueries(queriesPath)
+	// queriesPath := filepath.Join(curDir, "settings", "campusQueries.json")
+	// campus.Queries = fetchQueries(queriesPath)
 
-	campusAddresses := campus.GetAddresses()
-	fmt.Println(len(campusAddresses))
+	// campusAddresses := campus.GetAddresses()
+	// fmt.Println(len(campusAddresses))
+
+	Serve();
 }
