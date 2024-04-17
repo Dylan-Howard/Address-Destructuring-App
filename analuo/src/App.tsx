@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, MouseEvent, ChangeEvent } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
@@ -15,6 +15,7 @@ import DisplayTable from './Components/DisplayTable'
 import { Address } from './Types/Address';
 import { TableSkeleton } from './Components/TableSkeleton';
 import { PrimaryButton, SecondaryButton } from './Components/ColorButton';
+import FormDialog from './Components/FormDialog';
 
 
 const steps = ['Upload address file', 'Confirm results', 'Upload changes'];
@@ -102,6 +103,7 @@ function App() {
   });
   const [uploadStatus, setUploadStatus] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const canAdvance = () => activeStep !== 0 || file.size !== 0;
 
@@ -179,6 +181,14 @@ function App() {
     setFile(event.target.files[0]);
   }
 
+  const handleSettingsClick = (event: MouseEvent) => {
+    setSettingsOpen(true);
+  }
+
+  const handleSettingsClose = (event: MouseEvent) => {
+    setSettingsOpen(false);
+  };
+
   return (
     <Container maxWidth="md" sx={{ pt: 4 }}>
       <Stack>
@@ -213,7 +223,14 @@ function App() {
               <Typography sx={{ mt: 2, mb: 1 }}>Step {activeStep + 1}</Typography>
               <Stack flexDirection="row" justifyContent="center" >
                 {activeStep === 0
-                  ? <InputFileUpload onChange={handleFileChange} />
+                  ? (
+                    <Stack flexDirection="row" justifyContent="space-between" sx={{ width: "100%", maxWidth: 350 }}>
+                      <SecondaryButton variant="outlined" onClick={handleSettingsClick}>
+                        Adjust Settings
+                      </SecondaryButton>
+                      <InputFileUpload onChange={handleFileChange} />
+                    </Stack>
+                  )
                   : ''
                 }
                 {activeStep === 1
@@ -245,6 +262,7 @@ function App() {
           )}
         </Box>
       </Stack>
+      <FormDialog open={settingsOpen} handleClose={handleSettingsClose} />
     </Container>
   );
 }
