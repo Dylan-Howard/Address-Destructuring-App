@@ -1,11 +1,9 @@
 package main
 
 import (
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -38,26 +36,6 @@ func fetchAddressCollectionFromData(rows [][]string, onlyWCPS bool) AddressColle
 	}
 
 	return *addressFile
-}
-
-func fetchAddressCollectionFromCSV(filePath string, onlyWCPS bool) AddressCollection {
-	file, err := os.Open(filePath)
-
-	if err != nil {
-		log.Fatal("Error while reading the file", err)
-	}
-
-	defer file.Close()
-
-	reader := csv.NewReader(file)
-	records, err := reader.ReadAll()
-
-	// Checks for the error
-	if err != nil {
-		fmt.Println("Error reading records")
-	}
-
-	return fetchAddressCollectionFromData(records, onlyWCPS)
 }
 
 func fetchSettings(filePath string) ConnectionSettings {
@@ -114,37 +92,7 @@ func exportAddresses(filePath string, addresses []Address) {
 }
 
 func main() {
-	// curDir, err := os.Getwd()
-
-	// if err != nil {
-	// 	log.Println(err)
-	// }
-
-	// dataDirectory := filepath.Join(curDir, "../data")
-
-	/* Get patterns */
-	// patternsPath := filepath.Join(dataDirectory, "patterns.json")
-	// patterns := fetchPatternsFromJSON(patternsPath)
-
-	// /* Get addresses */
-	// addressesPath := filepath.Join(dataDirectory, "import", "wczp-addresses.csv")
-	// addressRecords := fetchAddressCollectionFromCSV(addressesPath, false)
-	// addresses := addressRecords.GetAddresses(patterns, "")
-
-	// /* Export Addresses */
-	// exportPath := filepath.Join(dataDirectory, "export", "addresses.csv")
-	// exportAddresses(exportPath, addresses)
-
-	// var campus InfiniteCampus
-
-	// settingsPath := filepath.Join(curDir, "settings", "campusSettings.json")
-	// campus.Settings = fetchSettings(settingsPath)
-
-	// queriesPath := filepath.Join(curDir, "settings", "campusQueries.json")
-	// campus.Queries = fetchQueries(queriesPath)
-
-	// campusAddresses := campus.GetAddresses()
-	// fmt.Println(len(campusAddresses))
+	fmt.Println("Your application is now running on: http://localhost:3000");
 
 	Serve();
 }
