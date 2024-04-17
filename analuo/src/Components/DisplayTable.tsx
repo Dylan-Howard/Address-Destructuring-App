@@ -15,8 +15,8 @@ import LastPageIcon from '@mui/icons-material/LastPage';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import Button from '@mui/material/Button';
 import Stack from '@mui/material/Stack';
+import { SecondaryButton } from './ColorButton';
 
 function TablePaginationActions(props: TablePaginationActionsProps) {
   const { count, page, rowsPerPage, onPageChange } = props;
@@ -96,8 +96,8 @@ function DisplayTable({ headers, rows }: { headers: string[], rows: string[][] }
 
   return (
     <Box>
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 750 }} size="small" aria-label="import data table">
+      <TableContainer component={Paper} >
+        <Table sx={{ display: 'block', maxWidth: 750, overflowX: 'scroll' }} size="small" aria-label="import data table">
           <TableHead>
             <TableRow>
               {
@@ -135,9 +135,9 @@ function DisplayTable({ headers, rows }: { headers: string[], rows: string[][] }
           />
       </TableContainer>
       <Stack direction="row" justifyContent="flex-end" sx={{ mt: 2 }}>
-        <Button variant="outlined" onClick={handleDownload}>
+        <SecondaryButton variant="outlined" onClick={handleDownload}>
           Download
-        </Button>
+        </SecondaryButton>
       </Stack>
     </Box>
   );

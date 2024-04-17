@@ -29,7 +29,7 @@ func handleAddressValidation(rw http.ResponseWriter, req *http.Request) {
 	header := rw.Header()
 	header.Add("Content-Type", "application/json")
 	header.Add("Access-Control-Allow-Origin", "http://localhost:3000")
-	header.Add("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
+	header.Add("Access-Control-Allow-Methods", "POST, OPTIONS")
 	header.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
 
 	if req.Method == "OPTIONS" {
@@ -38,7 +38,6 @@ func handleAddressValidation(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.Method != http.MethodPost {
-    // Handle non-POST requests
     return
   }
   
@@ -48,8 +47,6 @@ func handleAddressValidation(rw http.ResponseWriter, req *http.Request) {
   decoder := json.NewDecoder(req.Body)
   err := decoder.Decode(addr)
   if err != nil {
-    // Handle decoding error
-    fmt.Println("Error decoding JSON:", err)
     return
   }
 
@@ -81,12 +78,10 @@ func handleAddressValidation(rw http.ResponseWriter, req *http.Request) {
 	
 	jsonData, err := json.Marshal(responseData)
 	if err != nil {
-		// Handle encoding error
 		return
 	}
 	
 	rw.Write(jsonData)
-	// rw.WriteHeader(http.StatusOK)
 }
 
 func handleAddressSubmit(rw http.ResponseWriter, req *http.Request) {
@@ -94,7 +89,7 @@ func handleAddressSubmit(rw http.ResponseWriter, req *http.Request) {
 	header := rw.Header()
 	header.Add("Content-Type", "application/json")
 	header.Add("Access-Control-Allow-Origin", "http://localhost:3000")
-	header.Add("Access-Control-Allow-Methods", "DELETE, POST, GET, OPTIONS")
+	header.Add("Access-Control-Allow-Methods", "POST, OPTIONS")
 	header.Add("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
 
 	if req.Method == "OPTIONS" {
@@ -103,7 +98,6 @@ func handleAddressSubmit(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	if req.Method != http.MethodPost {
-    // Handle non-POST requests
     return
   }
 
@@ -114,7 +108,6 @@ func handleAddressSubmit(rw http.ResponseWriter, req *http.Request) {
 	
 	jsonData, err := json.Marshal(responseData)
 	if err != nil {
-		// Handle encoding error
 		return
 	}
 
@@ -124,16 +117,6 @@ func handleAddressSubmit(rw http.ResponseWriter, req *http.Request) {
 func Serve() {
 	fs := http.FileServer(http.Dir("analuo/build"))
 	http.Handle("/", fs)
-	// fileMatcher := regexp.MustCompile(`\.[a-zA-Z]*$`)
-
-	// http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	if !fileMatcher.MatchString(r.URL.Path) {
-	// 		http.ServeFile(w, r, "analuo/build/index.html")
-	// 	} else {
-	// 		fs.ServeHTTP(w, r)
-	// 	}
-	// })
-
 	http.HandleFunc("/api/addresses/validate", handleAddressValidation)
 	http.HandleFunc("/api/addresses/submit", handleAddressSubmit)
 	log.Fatal(http.ListenAndServe(":3000", nil))

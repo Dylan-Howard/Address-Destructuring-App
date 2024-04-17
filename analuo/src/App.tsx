@@ -7,14 +7,28 @@ import Step from '@mui/material/Step';
 import StepLabel from '@mui/material/StepLabel';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-// import logo from './logo.svg';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 import './App.css';
-import InputFileUpload from './Common/InputFileUpload';
-import DisplayTable from './Common/DisplayTable'
-import { Address } from './Common/Address';
-import CircularProgress from '@mui/material/CircularProgress';
+import InputFileUpload from './Components/InputFileUpload';
+import DisplayTable from './Components/DisplayTable'
+import { Address } from './Types/Address';
+import { TableSkeleton } from './Components/TableSkeleton';
+import { PrimaryButton, SecondaryButton } from './Components/ColorButton';
+
 
 const steps = ['Upload address file', 'Confirm results', 'Upload changes'];
+
+const successMessages = {
+  icon: <CheckCircleIcon sx={{ fontSize: 128, color: '', opacity: .7 }} />,
+  title: 'Hooray!',
+  paragraph: 'Your changes have been whisked away into our system and are ready to be used.',
+};
+const failedMessage = {
+  icon: <ErrorIcon sx={{ fontSize: 128 }} />,
+  title: 'Whoops!',
+  paragraph: 'It looks like an error occured during the update. Please make sure the your internet connections is stable and try again.',
+};
 
 async function parseCSV(file: File) {
   const headers: string[] = [];
@@ -108,23 +122,28 @@ function App() {
 
       const response = await postData('http://localhost:3000/api/addresses/validate', body);
       
-      const responseHeaders = Object.keys(response.data[0]);
-      const responseRows = response.data.map((a: Address) => ([
-        a.Id,
-        a.StreetNumber,
-        a.StreetName,
-        a.Unit,
-        a.City,
-        a.Zip,
-        a.State,
-        `${a.Region.Elementary} | ${a.Region.Middle} | ${a.Region.High}`,
-        a.InCounty,
-      ]));
-
-      setValidation({
-        headers: responseHeaders,
-        rows: responseRows,
-      });
+      try {
+        const responseHeaders = Object.keys(response.data[0]);
+        const responseRows = response.data.map((a: Address) => ([
+          a.Id,
+          a.StreetNumber,
+          a.StreetName,
+          a.Unit,
+          a.City,
+          a.Zip,
+          a.State,
+          `${a.Region.Elementary} | ${a.Region.Middle} | ${a.Region.High}`,
+          a.InCounty,
+        ]));
+  
+        setValidation({
+          headers: responseHeaders,
+          rows: responseRows,
+        });
+      } catch (error) {
+        setIsLoading(false);
+      }
+      
       setIsLoading(false);
     }
     if (activeStep === 2) {
@@ -161,7 +180,7 @@ function App() {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4 }}>
+    <Container maxWidth="md" sx={{ pt: 4 }}>
       <Stack>
         <Box sx={{ width: '100%' }}>
           <Stepper activeStep={activeStep}>
@@ -178,27 +197,31 @@ function App() {
             })}
           </Stepper>
           {activeStep === steps.length ? (
-            <Stack direction="column" justifyContent="center" alignContent="center">
-              <Typography variant="h2" sx={{ fontWeight: 600 }}>{uploadStatus ? "Success" : "Whoops"}</Typography>
+            <Stack direction="column" justifyContent="space-between" alignContent="center" sx={{ p: 10, minHeight: 350 }}>
+              <Box sx={{ m: 4, ml: 6, mr: 6 }} >
+                <Stack direction="row" justifyContent="center" sx={{ mb: 4}} >{uploadStatus ? successMessages.icon : failedMessage.icon}</Stack>
+                <Typography variant="h2" sx={{ fontWeight: 600, textAlign: 'center', mb: 2 }}>{uploadStatus ? successMessages.title : failedMessage.title}</Typography>
+                <Typography variant="body1" sx={{ textAlign: 'center' }}>{uploadStatus ? successMessages.paragraph : failedMessage.paragraph}</Typography>  
+              </Box>
               <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
                 <Box sx={{ flex: '1 1 auto' }} />
-                <Button onClick={handleReset}>Reset</Button>
+                <SecondaryButton onClick={handleReset}>Reset</SecondaryButton>
               </Box>
             </Stack>
           ) : (
-            <>
+            <Stack flexDirection="column" justifyContent="space-between" sx={{ minHeight: 350 }} >
               <Typography sx={{ mt: 2, mb: 1 }}>Step {activeStep + 1}</Typography>
-              <Stack flexDirection="row" justifyContent="center">
+              <Stack flexDirection="row" justifyContent="center" >
                 {activeStep === 0
                   ? <InputFileUpload onChange={handleFileChange} />
                   : ''
                 }
                 {activeStep === 1
-                  ? (isLoading ? <CircularProgress /> : <DisplayTable headers={headers} rows={rows} />)
+                  ? (isLoading ? <TableSkeleton /> : <DisplayTable headers={headers} rows={rows} />)
                   : ''
                 }
                 {activeStep === 2
-                  ? (isLoading ? <CircularProgress /> : <DisplayTable headers={validation.headers} rows={validation.rows} />)
+                  ? (isLoading ? <TableSkeleton /> : <DisplayTable headers={validation.headers} rows={validation.rows} />)
                   : ''
                 }
               </Stack>
@@ -214,11 +237,11 @@ function App() {
                   Back
                 </Button>
                 <Box sx={{ flex: '1 1 auto' }} />
-                <Button variant="contained" onClick={handleNext} disabled={!canAdvance()}>
+                <PrimaryButton variant="contained" onClick={handleNext} disabled={!canAdvance()}>
                   {activeStep === steps.length - 1 ? 'Finish' : 'Next'}
-                </Button>
+                </PrimaryButton>
               </Stack>
-            </>
+            </Stack>
           )}
         </Box>
       </Stack>
