@@ -30,7 +30,6 @@ import Paper from '@mui/material/Paper';
 const steps = [
   { label: 'Upload address file', cta: 'Validate'},
   { label: 'Confirm results', cta: 'Confirm'},
-  { label: 'Commit changes', cta: 'Commit'},
 ];
 
 const successMessages = {
@@ -126,7 +125,13 @@ function App() {
     rows: [['']],
     url: '',
   });
-  const [uploadStatus, setUploadStatus] = useState(false);
+  const [commit, setCommit] = useState({
+    success: false,
+    counts: {
+      adds: 0,
+      removes: 0,
+    },
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [patterns, setPatterns] = useState(basePatterns);
@@ -143,7 +148,7 @@ function App() {
           rows: rows,
         };
         console.log(`Patterns will be used in future updates: ${patterns}`)
-        const response = await postData('http://localhost:3000/api/validation', body);
+        const response = await postData('http://localhost:3000/api/validations', body);
       
         try {
           const responseHeaders = Object.keys(response.data[0]);
@@ -164,12 +169,20 @@ function App() {
     if (activeStep === 1) {
       setIsLoading(true);
       const body = {
-        headers: validation.headers,
-        rows: validation.rows,
+        validationId: validation.url.replace('data/export/', '').replace('.csv', ''),
       };
-      const response = await postData('http://localhost:3000/api/commit', body);
 
-      setUploadStatus(!!response);
+      handleSnackbarNotification('Committing these changes');
+
+      const response = await postData('http://localhost:3000/api/commits', body);
+
+      setCommit({
+        success: response.status === 200,
+        counts: {
+          adds: response.addCount,
+          removes: response.removeCount
+        }
+      });
       setIsLoading(false);
     }
 
@@ -234,9 +247,18 @@ function App() {
             {activeStep === steps.length ? (
               <Stack direction="column" justifyContent="space-between" alignContent="center" sx={{ p: 10, minHeight: 350 }}>
                 <Box sx={{ m: 4, ml: 6, mr: 6 }} >
-                  <Stack direction="row" justifyContent="center" sx={{ mb: 4}} >{uploadStatus ? successMessages.icon : failedMessage.icon}</Stack>
-                  <Typography variant="h2" sx={{ fontWeight: 600, textAlign: 'center', mb: 2 }}>{uploadStatus ? successMessages.title : failedMessage.title}</Typography>
-                  <Typography variant="body1" sx={{ textAlign: 'center' }}>{uploadStatus ? successMessages.paragraph : failedMessage.paragraph}</Typography>  
+                  <Stack direction="row" justifyContent="center" sx={{ mb: 4}} >{commit.success ? successMessages.icon : failedMessage.icon}</Stack>
+                  <Typography variant="h2" sx={{ fontWeight: 600, textAlign: 'center', mb: 2 }}>{commit.success ? successMessages.title : failedMessage.title}</Typography>
+                  <Typography variant="body1" sx={{ textAlign: 'center' }}>{commit.success ? successMessages.paragraph : failedMessage.paragraph}</Typography>
+                  {commit.success
+                    ? (
+                      <>
+                        <Typography variant="body1" sx={{ textAlign: 'center' }}>Successfully added {commit.counts.adds} addresses.</Typography>
+                        <Typography variant="body1" sx={{ textAlign: 'center' }}>Successfully removed {commit.counts.removes} addresses.</Typography>
+                      </>
+                    )
+                  :''
+                  }
                 </Box>
                 <Box sx={{ display: 'flex', flexDirection: 'row', pt: 2 }}>
                   <Box sx={{ flex: '1 1 auto' }} />

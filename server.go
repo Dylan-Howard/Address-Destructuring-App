@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -11,7 +10,7 @@ import (
 	"strings"
 )
 
-type AddressUploadFile struct {
+type ValidationRequest struct {
 	Headers []string 	 `json:"headers"`
 	Rows 		[][]string `json:"rows"`
 }
@@ -22,8 +21,13 @@ type ValidationResponse struct {
   Status int 			 `json:"status"`
 }
 
-type SubmitResponse struct {
-	Count  int `json:"count"`
+type CommitRequest struct {
+	ValidationId string `json:"validationId"`
+}
+
+type CommitResponse struct {
+	AddCount  int `json:"addCount"`
+	RemoveCount  int `json:"removeCount"`
   Status int `json:"status"`
 }
 
@@ -45,7 +49,7 @@ func handleValidation(rw http.ResponseWriter, req *http.Request) {
   }
   
   /* Decode the request body into the user struct */
-	addr := &AddressUploadFile{}
+	addr := &ValidationRequest{}
 
   decoder := json.NewDecoder(req.Body)
   err := decoder.Decode(addr)
@@ -65,7 +69,7 @@ func handleValidation(rw http.ResponseWriter, req *http.Request) {
 	patterns := fetchPatternsFromJSON(patternsPath)
   
   /* Process address data */
-	addressRecords := fetchAddressCollectionFromData(addr.Rows, false)
+	addressRecords := BuildAddressCollectionFromData(addr.Rows, false)
 	addresses := addressRecords.GetAddresses(patterns, "")
 
 	/* Create saved file */
@@ -90,8 +94,6 @@ func handleValidation(rw http.ResponseWriter, req *http.Request) {
 
 func handleCommit(rw http.ResponseWriter, req *http.Request) {
 
-	fmt.Println("Handling commit")
-
 	header := rw.Header()
 	header.Add("Content-Type", "application/json")
 	header.Add("Access-Control-Allow-Origin", "http://localhost:3000")
@@ -107,8 +109,20 @@ func handleCommit(rw http.ResponseWriter, req *http.Request) {
     return
   }
 
-	responseData := SubmitResponse{
-		Count: 10,
+	/* Decode the request body into the user struct */
+	commit := &CommitRequest{}
+
+	decoder := json.NewDecoder(req.Body)
+	err := decoder.Decode(commit)
+	if err != nil {
+		return
+	}
+
+	addCount, removeCount := executeCommit(commit.ValidationId)
+
+	responseData := CommitResponse{
+		AddCount: addCount,
+		RemoveCount: removeCount,
 		Status: 200,
 	}
 	
@@ -125,7 +139,7 @@ func Serve() {
 	directory := flag.String("d", ".", "the directory of static file to host")
 	http.Handle("/", fs)
 	http.Handle("/data/export/", http.StripPrefix(strings.TrimRight("/data/export/", "/"), http.FileServer(http.Dir(*directory))))
-	http.HandleFunc("/api/validation", handleValidation)
-	http.HandleFunc("/api/commit", handleCommit)
+	http.HandleFunc("/api/validations", handleValidation)
+	http.HandleFunc("/api/commits", handleCommit)
 	log.Fatal(http.ListenAndServe(":3000", nil))
 }

@@ -8,41 +8,17 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
 
-func fetchAddressCollectionFromData(rows [][]string, onlyWCPS bool) AddressCollection {
-	addressFile := new(AddressCollection)
-
-	for i := 0; i < len(rows); i++ {
-		var tAddress AddressRow
-		tAddress.Id, _ = strconv.Atoi(rows[i][0])
-		tAddress.StreetNumber = strings.TrimSpace(rows[i][2])
-		tAddress.StreetName = strings.TrimSpace(rows[i][3])
-		tAddress.Unit = strings.TrimSpace(rows[i][5])
-		tAddress.City = strings.TrimSpace(rows[i][6])
-		tAddress.Zip = strings.TrimSpace(rows[i][8])
-		tAddress.State = strings.TrimSpace(rows[i][12])
-		tAddress.InCounty = strings.TrimSpace(rows[i][16]) != "Outside County Line"
-
-		tRegion := SchoolRegion{
-			Elementary: strings.TrimSpace(rows[i][15]),
-			Middle: strings.TrimSpace(rows[i][14]),
-			High: strings.TrimSpace(rows[i][13]),
-		}
-		tAddress.Region = tRegion
-
-		if !onlyWCPS || tAddress.InCounty {
-			addressFile.Rows = append(addressFile.Rows, tAddress)
-		}
+func fetchSettings() ConnectionSettings {
+	/* Get Settings */
+	curDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
 	}
 
-	return *addressFile
-}
-
-func fetchSettings(filePath string) ConnectionSettings {
-	/* Get Settings */
-	settingsFile, err := os.Open(filePath)
+	settingsPath := filepath.Join(curDir, "settings", "campusSettings.json")
+	settingsFile, err := os.Open(settingsPath)
 
 	if err != nil {
 		fmt.Println("Couldn't open `settings.json`")
@@ -58,9 +34,15 @@ func fetchSettings(filePath string) ConnectionSettings {
 	return settings
 }
 
-func fetchQueries(filePath string) DatabaseQueries {
-	/* Get Settings */
-	queriesFile, err := os.Open(filePath)
+func fetchQueries() DatabaseQueries {
+	/* Get Queries */
+	curDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	queriesPath := filepath.Join(curDir, "settings", "campusQueries.json")
+	queriesFile, err := os.Open(queriesPath)
 
 	if err != nil {
 		fmt.Println("Couldn't open `queries.json`")
@@ -146,6 +128,62 @@ func ExportAddressesToCsv(prefix string, addresses []Address) (string, error) {
 	url := filepath.Join("data", "export", fileName)
 
 	return url, nil
+}
+
+func getDifferences(addr1 []Address, addr2 []Address) ([]Address, []Address) {
+
+	var toAdd []Address
+	// var toRemove []Address
+
+	for i := 0; i < len(addr1); i ++ {
+
+		doesMatch := false
+		j := 0
+
+		for !doesMatch && j < len(addr2) {
+			doesMatch = addr1[i].Match(addr2[j])
+			j++
+		}
+
+		/* If not matched, queue this address to add */
+		if j == len(addr2) {
+			toAdd = append(toAdd, addr1[i])
+		}
+
+		/* Remove any matched addresses */
+		if doesMatch {
+			addr2[j] = addr2[len(addr2)-1]
+    	addr2 = addr2[:len(addr2)-1]
+		}
+	}
+
+	return toAdd, addr2
+}
+
+func executeCommit(validationId string) (int, int) {
+
+	/* Fetch Commit Addresses */
+	fmt.Println("Processing commit")
+	validationPath := filepath.Join(getExportDirectory(), validationId + ".csv")
+	commitAddresses := FetchAddressesFromLocalData(validationPath)
+	
+	/* Initialize Database Collection */
+	var campus InfiniteCampus
+	campus.Settings = fetchSettings()
+	campus.Queries = fetchQueries()
+	
+	fmt.Println("Getting Campus Addresses")
+	campusAddresses := campus.GetAddresses()
+	
+	fmt.Println("Processing Differences")
+	addQueue, removeQueue := getDifferences(commitAddresses, campusAddresses)
+	
+	fmt.Println("Processing Add Queue")
+	addCount, _ := campus.AddAddresses(addQueue)
+	fmt.Println("Processing Remove Queue")
+	removeCount, _ := campus.RemoveAddresses(removeQueue)
+
+	return addCount, removeCount
 }
 
 func main() {

@@ -1,6 +1,10 @@
 package main
 
 import (
+	"encoding/csv"
+	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -31,13 +35,51 @@ func (a Address) IsInDistrict() bool {
 }
 
 func (a Address) ToCsvString() string {
-	return (strconv.Itoa(a.Id) + "," + a.StreetNumber + "," + a.StreetName + "," + a.Unit + "," +
-		a.City + "," + a.Zip + "," + a.State + ",[" + a.Region.Elementary + ";" +
-		a.Region.Middle + ";" + a.Region.High + "]," + strconv.FormatBool(a.InCounty))
+	return "\"" + (strconv.Itoa(a.Id) + "\",\"" + a.StreetNumber + "\",\"" + a.StreetName + "\",\"" + a.Unit + "\",\"" +
+		a.City + "\",\"" + a.Zip + "\",\"" + a.State + "\",\"[" + a.Region.Elementary + ";" +
+		a.Region.Middle + ";" + a.Region.High + "]\",\"" + strconv.FormatBool(a.InCounty)) + "\""
 }
 
 func (a Address) ToString() string {
 	return a.StreetNumber + "," + a.StreetName + "," + a.Unit + "," + a.City
+}
+
+func (a1 Address) Match(a2 Address) bool {
+	return a1.StreetNumber == a2.StreetNumber && a1.StreetName == a2.StreetName && a1.Unit == a2.Unit
+}
+
+func (a1 Address) Compare(a2 Address) string {
+	comparisonResults := []string{}
+	comparisonResults = append(comparisonResults, "The following fields do not match: ")
+	if a1.Id != a2.Id {
+		comparisonResults = append(comparisonResults, "Id")
+	}
+	if a1.StreetNumber != a2.StreetNumber {
+		comparisonResults = append(comparisonResults, "StreetNumber")
+	}
+	if a1.StreetName != a2.StreetName {
+		comparisonResults = append(comparisonResults, "StreetName")
+	}
+	if a1.Unit != a2.Unit {
+		comparisonResults = append(comparisonResults, "Unit")
+	}
+	if a1.City != a2.City {
+		comparisonResults = append(comparisonResults, "City")
+	}
+	if a1.State != a2.State {
+		comparisonResults = append(comparisonResults, "State")
+	}
+	if a1.Zip != a2.Zip {
+		comparisonResults = append(comparisonResults, "Zip")
+	}
+	if a1.Region != a2.Region {
+		comparisonResults = append(comparisonResults, "Region")
+	}
+	if a1.InCounty != a2.InCounty {
+		comparisonResults = append(comparisonResults, "InCounty")
+	}
+
+	return strings.Join(comparisonResults, ", ")
 }
 
 /*
@@ -229,4 +271,84 @@ func (a AddressCollection) GetAddresses(patterns Patterns, typeFilter string) []
 	}
 
 	return list
+}
+
+func BuildAddressCollectionFromData(rows [][]string, onlyWCPS bool) AddressCollection {
+	addressFile := new(AddressCollection)
+
+	for i := 0; i < len(rows); i++ {
+		var tAddress AddressRow
+		tAddress.Id, _ = strconv.Atoi(rows[i][0])
+		tAddress.StreetNumber = strings.TrimSpace(rows[i][2])
+		tAddress.StreetName = strings.TrimSpace(rows[i][3])
+		tAddress.Unit = strings.TrimSpace(rows[i][5])
+		tAddress.City = strings.TrimSpace(rows[i][6])
+		tAddress.Zip = strings.TrimSpace(rows[i][8])
+		tAddress.State = strings.TrimSpace(rows[i][12])
+		tAddress.InCounty = strings.TrimSpace(rows[i][16]) != "Outside County Line"
+
+		tRegion := SchoolRegion{
+			Elementary: strings.TrimSpace(rows[i][15]),
+			Middle: strings.TrimSpace(rows[i][14]),
+			High: strings.TrimSpace(rows[i][13]),
+		}
+		tAddress.Region = tRegion
+
+		if !onlyWCPS || tAddress.InCounty {
+			addressFile.Rows = append(addressFile.Rows, tAddress)
+		}
+	}
+
+	return *addressFile
+}
+
+func FetchAddressesFromLocalData(filePath string) []Address {
+	file, err := os.Open(filePath)
+
+	if err != nil {
+		log.Fatal("Error while reading the file", err)
+	}
+
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	records, err := reader.ReadAll()
+
+	// Checks for the error
+	if err != nil {
+		fmt.Println("Error reading records")
+	}
+
+	addresses := []Address{}
+
+	for i := 1; i < len(records); i++ {
+		// fmt.Println(records[i])
+
+		var tAddress Address
+		tAddress.Id, _ = strconv.Atoi(records[i][0])
+		tAddress.StreetNumber = records[i][1]
+		tAddress.StreetName = records[i][2]
+		tAddress.Unit = records[i][3]
+		tAddress.City = records[i][4]
+		tAddress.Zip = records[i][5]
+		tAddress.State = records[i][6]
+		tAddress.InCounty = records[i][8] == "true"
+
+		regionParts := strings.Split(records[i][7], ";")
+		tRegion := SchoolRegion{
+			Middle: regionParts[1],
+		}
+		if 0 < len(regionParts[0]) {
+			tRegion.Elementary = regionParts[0][1:]
+		}
+		if (0 < len(regionParts[2])) {
+			tRegion.High = regionParts[2][0:len(regionParts[2])-1]
+		}
+
+		tAddress.Region = tRegion
+
+		addresses = append(addresses, tAddress)
+	}
+
+	return addresses
 }

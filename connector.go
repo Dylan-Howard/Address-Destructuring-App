@@ -128,9 +128,43 @@ func (ic InfiniteCampus) ReadAddresses() ([]Address, error) {
 		}
 
 		list = append(list, address)
-
-		// fmt.Printf("ID: %d, Address: %s %s %s %s %s, %s %s; {%s}\n", id, number, street, tag, apt, city, state, zip, schools)
 	}
 
 	return list, nil
+}
+
+func (ic InfiniteCampus) AddAddresses(addQueue []Address) (int, error) {
+
+	ic.Connect()
+
+	/* Read addresses */
+	ctx := context.Background()
+
+	/* Check if database is alive */
+	err := db.PingContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	/* Execute query */
+
+	return len(addQueue), nil
+}
+
+func (ic InfiniteCampus) RemoveAddresses(removeQueue []Address) (int, error) {
+
+	ic.Connect()
+
+	/* Read addresses */
+	ctx := context.Background()
+
+	/* Check if database is alive */
+	err := db.PingContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+
+	/* Execute query */
+	
+	return len(removeQueue), nil
 }
