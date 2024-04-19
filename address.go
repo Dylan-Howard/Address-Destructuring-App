@@ -30,6 +30,12 @@ func (a Address) IsInDistrict() bool {
 	return a.Region.Elementary != "City Schools"
 }
 
+func (a Address) ToCsvString() string {
+	return (strconv.Itoa(a.Id) + "," + a.StreetNumber + "," + a.StreetName + "," + a.Unit + "," +
+		a.City + "," + a.Zip + "," + a.State + ",[" + a.Region.Elementary + ";" +
+		a.Region.Middle + ";" + a.Region.High + "]," + strconv.FormatBool(a.InCounty))
+}
+
 func (a Address) ToString() string {
 	return a.StreetNumber + "," + a.StreetName + "," + a.Unit + "," + a.City
 }

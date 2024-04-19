@@ -16,16 +16,14 @@ import FirstPageIcon from '@mui/icons-material/FirstPage';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import Stack from '@mui/material/Stack';
-import { SecondaryButton } from './ColorButton';
+import { SecondaryButton } from './Button';
 
 function TablePaginationActions(props: TablePaginationActionsProps) {
   const { count, page, rowsPerPage, onPageChange } = props;
 
-  const handleFirstPageButtonClick = (
-    event: MouseEvent<HTMLButtonElement>,
-  ) => {
+  const handleFirstPageButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
     onPageChange(event, 0);
-  };
+  }
 
   const handleBackButtonClick = (event: MouseEvent<HTMLButtonElement>) => {
     onPageChange(event, page - 1);
@@ -73,8 +71,7 @@ function TablePaginationActions(props: TablePaginationActionsProps) {
   );
 }
 
-
-function DisplayTable({ headers, rows }: { headers: string[], rows: string[][] }) {
+function DisplayTable({ headers, rows, downloadUrl }: { headers: string[], rows: string[][], downloadUrl: string | undefined }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -87,11 +84,12 @@ function DisplayTable({ headers, rows }: { headers: string[], rows: string[][] }
     setPage(0);
   };
 
-  function handleDownload() {
-    const csvContent = "data:text/csv;charset=utf-8," 
-      + rows.map(e => e.join(",")).join("\n");
-    const encodedUri = encodeURI(csvContent);
-    window.open(encodedUri);
+  if (rows.length < 2) {
+    return (
+      <Box>
+        Hmm, it looks like nothing is here. 
+      </Box>
+    );
   }
 
   return (
@@ -106,8 +104,7 @@ function DisplayTable({ headers, rows }: { headers: string[], rows: string[][] }
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.length
-              ? rows
+            {rows
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((row) => (
                   <TableRow
@@ -119,7 +116,6 @@ function DisplayTable({ headers, rows }: { headers: string[], rows: string[][] }
                     }
                   </TableRow>
                 ))
-              : ''
             }
           </TableBody>
         </Table>
@@ -134,11 +130,18 @@ function DisplayTable({ headers, rows }: { headers: string[], rows: string[][] }
             ActionsComponent={TablePaginationActions}
           />
       </TableContainer>
-      <Stack direction="row" justifyContent="flex-end" sx={{ mt: 2 }}>
-        <SecondaryButton variant="outlined" onClick={handleDownload}>
-          Download
-        </SecondaryButton>
-      </Stack>
+      {downloadUrl
+        ? (
+          <Stack direction="row" justifyContent="flex-end" sx={{ mt: 2 }}>
+            <a href={`/data/export/${downloadUrl}`} download="Validation Results">
+              <SecondaryButton variant="outlined">
+                Download
+              </SecondaryButton>
+            </a>
+          </Stack>
+        )
+        : ''
+      }
     </Box>
   );
 }

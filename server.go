@@ -2,21 +2,24 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type AddressUploadFile struct {
-	Headers []string `json:"headers"`
+	Headers []string 	 `json:"headers"`
 	Rows 		[][]string `json:"rows"`
 }
 
 type ValidationResponse struct {
-  Data []Address `json:"data"`
-  Status int `json:"status"`
+  Data 	 []Address `json:"data"`
+	Url		 string		 `json:"url"`
+  Status int 			 `json:"status"`
 }
 
 type SubmitResponse struct {
@@ -24,7 +27,7 @@ type SubmitResponse struct {
   Status int `json:"status"`
 }
 
-func handleAddressValidation(rw http.ResponseWriter, req *http.Request) {
+func handleValidation(rw http.ResponseWriter, req *http.Request) {
 
 	header := rw.Header()
 	header.Add("Content-Type", "application/json")
@@ -50,9 +53,6 @@ func handleAddressValidation(rw http.ResponseWriter, req *http.Request) {
     return
   }
 
-	fmt.Println("Headers:", len(addr.Headers))
-  fmt.Println("Rows:", len(addr.Rows))
-
 	/* Get patterns */
 	curDir, err := os.Getwd()
 
@@ -66,14 +66,18 @@ func handleAddressValidation(rw http.ResponseWriter, req *http.Request) {
   
   /* Process address data */
 	addressRecords := fetchAddressCollectionFromData(addr.Rows, false)
-	fmt.Println(addressRecords.Rows[0])
 	addresses := addressRecords.GetAddresses(patterns, "")
 
-	fmt.Println("Addresses:", len(addresses))
+	/* Create saved file */
+	validationFile, err := ExportAddressesToCsv("validation", addresses)
+	if err != nil {
+		log.Println(err)
+	}
 
 	responseData := ValidationResponse{
 		Data: addresses,
 		Status: 200,
+		Url: validationFile,
 	}
 	
 	jsonData, err := json.Marshal(responseData)
@@ -84,7 +88,9 @@ func handleAddressValidation(rw http.ResponseWriter, req *http.Request) {
 	rw.Write(jsonData)
 }
 
-func handleAddressSubmit(rw http.ResponseWriter, req *http.Request) {
+func handleCommit(rw http.ResponseWriter, req *http.Request) {
+
+	fmt.Println("Handling commit")
 
 	header := rw.Header()
 	header.Add("Content-Type", "application/json")
@@ -116,8 +122,10 @@ func handleAddressSubmit(rw http.ResponseWriter, req *http.Request) {
 
 func Serve() {
 	fs := http.FileServer(http.Dir("analuo/build"))
+	directory := flag.String("d", ".", "the directory of static file to host")
 	http.Handle("/", fs)
-	http.HandleFunc("/api/addresses/validate", handleAddressValidation)
-	http.HandleFunc("/api/addresses/submit", handleAddressSubmit)
+	http.Handle("/data/export/", http.StripPrefix(strings.TrimRight("/data/export/", "/"), http.FileServer(http.Dir(*directory))))
+	http.HandleFunc("/api/validation", handleValidation)
+	http.HandleFunc("/api/commit", handleCommit)
 	log.Fatal(http.ListenAndServe(":3000", nil))
 }

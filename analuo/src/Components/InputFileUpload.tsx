@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { ChangeEventHandler } from 'react';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
-import { PrimaryButton } from './ColorButton';
+import { PrimaryButton } from './Button';
 
 const VisuallyHiddenInput = styled('input')({
   clip: 'rect(0 0 0 0)',

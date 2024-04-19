@@ -2,9 +2,11 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -74,21 +76,76 @@ func fetchQueries(filePath string) DatabaseQueries {
 	return queries
 }
 
-func exportAddresses(filePath string, addresses []Address) {
-	f, err := os.Create(filePath)
+func getExportDirectory() string {
+	curDir, err := os.Getwd()
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
+
+	return filepath.Join(curDir, "data", "export")
+}
+
+func padStringLeft(str string, length int) string {
+	for len(str) < length {
+		str = "0" + str
+	}
+	return str
+}
+
+func getNewFileName(prefix string) string {
+	exportDirectory := getExportDirectory()
+
+	entries, err := os.ReadDir(exportDirectory)
+  if err != nil {
+    fmt.Println(err)
+  }
+
+	/* Find used filenames */
+	usedFiles := make(map[string]bool)
+  for _, e := range entries {
+		usedFiles[e.Name()] = true
+  }
+
+	/* Generate unique filename */
+	i := 1
+	for {
+		fileId := strconv.Itoa(i)
+		tFilename := prefix + padStringLeft(fileId, 6) + ".csv"
+
+		if !usedFiles[tFilename] {
+			return tFilename
+		}
+
+		i++
+	}
+}
+
+func ExportAddressesToCsv(prefix string, addresses []Address) (string, error) {
+
+	/* Creates new file with unique name in the export directory */
+	fileName := getNewFileName(prefix)
+	exportFilePath := filepath.Join(getExportDirectory(), fileName)
+	f, err := os.Create(exportFilePath)
+	if err != nil {
+		fmt.Println(err)
+		return "", errors.New("could not access the filepath")
+	}
+
+	/* Writes addresses to the new file */
+	f.WriteString("Id,StreetNumber,StreetName,Unit,City,Zip,State,Region,InCounty\n")
 	for i := 0; i < len(addresses); i ++ {
-		_, err = f.WriteString(addresses[i].ToString() + "\n")
+		_, err = f.WriteString(addresses[i].ToCsvString() + "\n")
 
 		if err != nil {
 			fmt.Println(err)
 			f.Close()
-			return
+			return "", errors.New("could write to the local directory")
 		}
 	}
+
+	url := filepath.Join("data", "export", fileName)
+
+	return url, nil
 }
 
 func main() {
