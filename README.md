@@ -1,46 +1,51 @@
-# Getting Started with Create React App
+# Analuo - Address Data Processor for Warren County Public Schools
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project provides a user interface to manage and upload address data to Infinite Campus. It utilizes React/TypeScript for the frontend and Go lang with SQL for the backend.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+* Input address data
+* Edit parsing settings
+* Upload data to Infinite Campus
 
-### `npm start`
+## Prerequisites
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+* Node.js and npm installed
+* Go lang compiler installed
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Installation
 
-### `npm test`
+1. Clone this repository:
+   ```bash
+   git clone [https://github.com/](https://github.com/)<your-username>/analuo.git
+   ```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Clone this repository:
+   ```bash
+   cd analuo
+   ```
+   
+3. Clone this repository:
+   ```bash
+   npm install
+   ```
 
-### `npm run build`
+## Running the application
+1. Compile the backend (refer to step 4 in Installation).
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+  ```bash
+  go build
+  ```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. Build the frontend:
+  ```bash
+  npm run build
+  Use code with caution.
+  ```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+This will create a production build in the build folder. Serve the contents of this folder using a web server of your choice.
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+##Usage
+1. Access the application URL in your web browser.
+2. Enter address data and configure parsing settings as needed.
+3. Initiate the upload process to Infinite Campus.
