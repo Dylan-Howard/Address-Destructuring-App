@@ -1,12 +1,24 @@
 # Analuo - Address Data Processor for Warren County Public Schools
 
-This project provides a user interface to manage and upload address data to Infinite Campus. It utilizes React/TypeScript for the frontend and Go lang with SQL for the backend.
+This project provides a user interface to manage and upload address data to Infinite Campus. It utilizes React for the frontend and Go lang with SQL for the backend.
 
 ## Features
 
 * Input address data
 * Edit parsing settings
 * Upload data to Infinite Campus
+
+## Tech Stack:
+* Frontend: React user interface
+* Backend: Go programming language for data transformation service and REST APIs
+* Database: Microsoft SQL Server
+
+<div>
+  <img src="https://raw.githubusercontent.com/Dylan-Howard/Identity-Systems-Monitor/main/prognosis-documentation/icon-react.svg" height=64 />
+  <img src="https://raw.githubusercontent.com/Dylan-Howard/Identity-Systems-Monitor/main/prognosis-documentation/icon-reactadmin.svg" height=64 />
+  <img src="https://raw.githubusercontent.com/Dylan-Howard/Identity-Systems-Monitor/main/prognosis-documentation/icon-csharp.svg" height=64 />
+  <img src="https://raw.githubusercontent.com/Dylan-Howard/Identity-Systems-Monitor/main/prognosis-documentation/icon-dotnet.svg" height=64 />
+</div>
 
 ## Prerequisites
 
@@ -45,7 +57,7 @@ This project provides a user interface to manage and upload address data to Infi
 
 This will create a production build in the build folder. Serve the contents of this folder using a web server of your choice.
 
-##Usage
+## Usage
 1. Access the application URL in your web browser.
 2. Enter address data and configure parsing settings as needed.
 3. Initiate the upload process to Infinite Campus.
