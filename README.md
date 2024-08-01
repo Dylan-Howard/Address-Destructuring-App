@@ -14,10 +14,8 @@ This project provides a user interface to manage and upload address data to Infi
 * Database: Microsoft SQL Server
 
 <div>
-  <img src="https://raw.githubusercontent.com/Dylan-Howard/Identity-Systems-Monitor/main/prognosis-documentation/icon-react.svg" height=64 />
-  <img src="https://raw.githubusercontent.com/Dylan-Howard/Identity-Systems-Monitor/main/prognosis-documentation/icon-reactadmin.svg" height=64 />
-  <img src="https://raw.githubusercontent.com/Dylan-Howard/Identity-Systems-Monitor/main/prognosis-documentation/icon-csharp.svg" height=64 />
-  <img src="https://raw.githubusercontent.com/Dylan-Howard/Identity-Systems-Monitor/main/prognosis-documentation/icon-dotnet.svg" height=64 />
+  <img src="https://raw.githubusercontent.com/Dylan-Howard/Greek-Learning-App/master/GreekLearningApp-Illustrations/icon-react.svg" height=64 />
+  <img src="https://raw.githubusercontent.com/Dylan-Howard/Greek-Learning-App/master/GreekLearningApp-Illustrations/icon-golang.svg" height=64 />
 </div>
 
 ## Prerequisites
