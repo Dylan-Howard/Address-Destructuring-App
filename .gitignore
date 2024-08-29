@@ -9,8 +9,7 @@ settings
 analuo/coverage
 
 # production
-# analuo/build
-export
+analuo/build
 
 # misc
 .DS_Store
