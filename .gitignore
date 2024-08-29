@@ -11,6 +11,9 @@ analuo/coverage
 # production
 analuo/build
 
+# export
+data/export/
+
 # misc
 .DS_Store
 .env.local
